@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b0220">
+<title>Chokhachokhi - চোখাচোখি</title>
+<link rel="icon" href="/logo.png">
+<style>
+  :root {
+    --bg1: #0b0220;
+    --bg2: #1a0638;
+    --pink: #ff2fd0;
+    --violet: #8b3dff;
+    --blue: #2f6bff;
+    --card: rgba(255,255,255,.06);
+    --line: rgba(255,47,208,.35);
+    --text: #f7f2ff;
+    --muted: #b9a8dc;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, sans-serif; color: var(--text); min-height: 100vh;
+    display: flex; flex-direction: column;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(255,47,208,.22), transparent 45%),
+      radial-gradient(circle at 85% 90%, rgba(47,107,255,.22), transparent 45%),
+      linear-gradient(160deg, var(--bg1), var(--bg2));
+    background-attachment: fixed;
+  }
+  header { padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; background: rgba(11,2,32,.7); border-bottom: 1px solid var(--line); backdrop-filter: blur(6px); }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand img { width: 38px; height: 38px; border-radius: 10px; box-shadow: 0 0 12px rgba(255,47,208,.5); }
+  header h1 { font-size: 20px; background: linear-gradient(90deg, var(--pink), var(--violet)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  #online { font-size: 13px; color: var(--muted); }
+  main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 12px; gap: 12px; }
+  .videos { position: relative; width: 100%; max-width: 900px; aspect-ratio: 16/10; background: #05010f; border-radius: 16px; overflow: hidden; border: 2px solid var(--line); box-shadow: 0 0 28px rgba(139,61,255,.45); }
+  #remote { width: 100%; height: 100%; object-fit: cover; }
+  #local { position: absolute; right: 10px; bottom: 10px; width: 28%; max-width: 200px; aspect-ratio: 4/3; object-fit: cover; border-radius: 10px; border: 2px solid var(--pink); background: #12052b; transform: scaleX(-1); }
+  #status { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; padding: 20px; font-size: 18px; color: var(--muted); pointer-events: none; }
+  .controls { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  button { padding: 12px 22px; font-size: 16px; border: 0; border-radius: 12px; cursor: pointer; color: #fff; font-weight: 600; }
+  button:disabled { opacity: .35; cursor: not-allowed; }
+  #startBtn, #enterBtn { background: linear-gradient(90deg, var(--pink), var(--violet)); box-shadow: 0 0 16px rgba(255,47,208,.45); }
+  #nextBtn { background: linear-gradient(90deg, var(--violet), var(--blue)); box-shadow: 0 0 14px rgba(47,107,255,.4); }
+  #stopBtn { background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2); }
+  #reportBtn { background: #e11d48; }
+  #gate { background: var(--card); border: 1px solid var(--line); padding: 22px; border-radius: 20px; max-width: 440px; text-align: center; line-height: 1.6; box-shadow: 0 0 30px rgba(139,61,255,.35); }
+  #gate .logo { width: 170px; max-width: 60%; border-radius: 28px; margin: 0 auto 10px; display: block; box-shadow: 0 0 24px rgba(255,47,208,.55); }
+  #gate p { color: var(--muted); font-size: 15px; margin-bottom: 6px; }
+  #gate label { display: block; margin: 14px 0; cursor: pointer; color: var(--text); font-size: 15px; }
+  #gate input[type=checkbox] { accent-color: var(--pink); width: 18px; height: 18px; vertical-align: middle; margin-right: 6px; }
+  .hidden { display: none !important; }
+  small { color: var(--muted); text-align: center; max-width: 600px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <img src="/logo.png" alt="" onerror="this.style.display='none'">
+    <h1>চোখাচোখি</h1>
+  </div>
+  <span id="online"></span>
+</header>
+
+<main>
+  <div id="gate">
+    <img class="logo" src="/logo.png" alt="চোখাচোখি" onerror="this.style.display='none'">
+    <p><b style="color:#fff;font-size:18px">চোখাচোখি-তে স্বাগতম!</b></p>
+    <p>এখানে অচেনা মানুষের সাথে ভিডিও কল হবে। অশালীন আচরণ, হয়রানি বা অবৈধ কিছু করা নিষেধ। কেউ খারাপ আচরণ করলে "Report" চাপুন।</p>
+    <label><input type="checkbox" id="ageCheck"> আমার বয়স ১৮ বা তার বেশি এবং আমি নিয়মগুলো মানছি</label>
+    <button id="enterBtn" disabled>ক্যামেরা চালু করুন</button>
+  </div>
+
+  <div id="app" class="hidden" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:12px">
+    <div class="videos">
+      <video id="remote" autoplay playsinline></video>
+      <video id="local" autoplay playsinline muted></video>
+      <div id="status">"Start" চাপুন</div>
+    </div>
+    <div class="controls">
+      <button id="startBtn">▶ Start</button>
+      <button id="nextBtn" disabled>⏭ Next</button>
+      <button id="stopBtn" disabled>⏹ Stop</button>
+      <button id="reportBtn" disabled>🚩 Report</button>
+    </div>
+    <small>ক্যামেরা ও মাইক্রোফোনের অনুমতি দিতে হবে।</small>
+  </div>
+</main>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const $ = (id) => document.getElementById(id);
+const socket = io();
+let localStream = null;
+let pc = null;
+let active = false;
+
+const rtcConfig = {
+  iceServers: [
+    { urls: 'stun:stun.l.google.com:19302' }
+    // কিছু নেটওয়ার্কে TURN server লাগবে, যেমন:
+    // { urls: 'turn:YOUR_TURN_HOST:3478', username: 'USER', credential: 'PASS' }
+  ]
+};
+
+function setStatus(text) {
+  $('status').textContent = text;
+  $('status').classList.toggle('hidden', !text);
+}
+
+function setButtons(state) {
+  $('startBtn').disabled = state !== 'idle';
+  $('nextBtn').disabled = state === 'idle';
+  $('stopBtn').disabled = state === 'idle';
+  $('reportBtn').disabled = state !== 'connected';
+}
+
+$('ageCheck').onchange = (e) => { $('enterBtn').disabled = !e.target.checked; };
+
+$('enterBtn').onclick = async () => {
+  try {
+    localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+  } catch (err) {
+    alert('ক্যামেরা/মাইক্রোফোনের অনুমতি পাওয়া যায়নি: ' + err.message);
+    return;
+  }
+  $('local').srcObject = localStream;
+  $('gate').classList.add('hidden');
+  $('app').classList.remove('hidden');
+};
+
+function closePeer() {
+  if (pc) {
+    pc.ontrack = pc.onicecandidate = pc.onconnectionstatechange = null;
+    pc.close();
+    pc = null;
+  }
+  $('remote').srcObject = null;
+}
+
+function createPeer() {
+  pc = new RTCPeerConnection(rtcConfig);
+  localStream.getTracks().forEach((t) => pc.addTrack(t, localStream));
+  pc.ontrack = (e) => {
+    $('remote').srcObject = e.streams[0];
+    setStatus('');
+    setButtons('connected');
+  };
+  pc.onicecandidate = (e) => {
+    if (e.candidate) socket.emit('signal', { candidate: e.candidate });
+  };
+  pc.onconnectionstatechange = () => {
+    if (pc && ['failed', 'disconnected'].includes(pc.connectionState)) {
+      setStatus('সংযোগ বিচ্ছিন্ন হয়েছে, নতুন কাউকে খোঁজা হচ্ছে...');
+      findNext();
+    }
+  };
+}
+
+function findNext() {
+  closePeer();
+  active = true;
+  setStatus('কারো জন্য অপেক্ষা করা হচ্ছে...');
+  setButtons('waiting');
+  socket.emit('join');
+}
+
+$('startBtn').onclick = findNext;
+$('nextBtn').onclick = findNext;
+
+$('stopBtn').onclick = () => {
+  active = false;
+  socket.emit('stop');
+  closePeer();
+  setStatus('"Start" চাপুন');
+  setButtons('idle');
+};
+
+$('reportBtn').onclick = () => {
+  socket.emit('report');
+  alert('রিপোর্ট জমা হয়েছে। নতুন কাউকে খোঁজা হচ্ছে।');
+  findNext();
+};
+
+socket.on('waiting', () => setStatus('কারো জন্য অপেক্ষা করা হচ্ছে...'));
+
+socket.on('matched', async ({ initiator }) => {
+  setStatus('সংযোগ করা হচ্ছে...');
+  createPeer();
+  if (initiator) {
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    socket.emit('signal', { description: pc.localDescription });
+  }
+});
+
+socket.on('signal', async ({ description, candidate }) => {
+  if (!pc) return;
+  try {
+    if (description) {
+      await pc.setRemoteDescription(description);
+      if (description.type === 'offer') {
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        socket.emit('signal', { description: pc.localDescription });
+      }
+    } else if (candidate) {
+      await pc.addIceCandidate(candidate);
+    }
+  } catch (err) {
+    console.error('Signal error', err);
+  }
+});
+
+socket.on('partner-left', () => {
+  if (active) {
+    setStatus('অন্যজন চলে গেছেন। নতুন কাউকে খোঁজা হচ্ছে...');
+    findNext();
+  }
+});
+
+socket.on('online', (n) => { $('online').textContent = '🟢 অনলাইন: ' + n; });
+
+setButtons('idle');
+</script>
+</body>
+</html>
