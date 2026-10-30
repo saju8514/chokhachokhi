@@ -32,7 +32,11 @@
   .brand { display: flex; align-items: center; gap: 10px; }
   .brand img { width: 38px; height: 38px; border-radius: 10px; box-shadow: 0 0 12px rgba(255,47,208,.5); }
   header h1 { font-size: 20px; background: linear-gradient(90deg, var(--pink), var(--violet)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
   #online { font-size: 13px; color: var(--muted); }
+  .user { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+  .user img { width: 26px; height: 26px; border-radius: 50%; }
+  .user button { padding: 5px 10px; font-size: 12px; border-radius: 8px; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2); }
   main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 12px; gap: 12px; }
   .videos { position: relative; width: 100%; max-width: 900px; aspect-ratio: 16/10; background: #05010f; border-radius: 16px; overflow: hidden; border: 2px solid var(--line); box-shadow: 0 0 28px rgba(139,61,255,.45); }
   #remote { width: 100%; height: 100%; object-fit: cover; }
@@ -41,13 +45,14 @@
   .controls { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
   button { padding: 12px 22px; font-size: 16px; border: 0; border-radius: 12px; cursor: pointer; color: #fff; font-weight: 600; }
   button:disabled { opacity: .35; cursor: not-allowed; }
-  #startBtn, #enterBtn { background: linear-gradient(90deg, var(--pink), var(--violet)); box-shadow: 0 0 16px rgba(255,47,208,.45); }
+  #startBtn, #enterBtn, #loginBtn { background: linear-gradient(90deg, var(--pink), var(--violet)); box-shadow: 0 0 16px rgba(255,47,208,.45); }
   #nextBtn { background: linear-gradient(90deg, var(--violet), var(--blue)); box-shadow: 0 0 14px rgba(47,107,255,.4); }
   #stopBtn { background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2); }
   #reportBtn { background: #e11d48; }
-  #gate { background: var(--card); border: 1px solid var(--line); padding: 22px; border-radius: 20px; max-width: 440px; text-align: center; line-height: 1.6; box-shadow: 0 0 30px rgba(139,61,255,.35); }
-  #gate .logo { width: 170px; max-width: 60%; border-radius: 28px; margin: 0 auto 10px; display: block; box-shadow: 0 0 24px rgba(255,47,208,.55); }
-  #gate p { color: var(--muted); font-size: 15px; margin-bottom: 6px; }
+  #gate, #login { background: var(--card); border: 1px solid var(--line); padding: 22px; border-radius: 20px; max-width: 440px; text-align: center; line-height: 1.6; box-shadow: 0 0 30px rgba(139,61,255,.35); }
+  #gate .logo, #login .logo { width: 170px; max-width: 60%; border-radius: 28px; margin: 0 auto 10px; display: block; box-shadow: 0 0 24px rgba(255,47,208,.55); }
+  #gate p, #login p { color: var(--muted); font-size: 15px; margin-bottom: 6px; }
+  #login button { margin-top: 12px; }
   #gate label { display: block; margin: 14px 0; cursor: pointer; color: var(--text); font-size: 15px; }
   #gate input[type=checkbox] { accent-color: var(--pink); width: 18px; height: 18px; vertical-align: middle; margin-right: 6px; }
   .hidden { display: none !important; }
@@ -57,6 +62,7 @@
     .videos { aspect-ratio: 9/16; width: min(100%, 40vh); width: min(100%, 40dvh); height: auto; max-width: none; margin: 0 auto; border-radius: 14px; }
     #local { width: 32%; aspect-ratio: 3/4; }
     button { padding: 12px 16px; font-size: 15px; }
+    .user button { padding: 5px 10px; font-size: 12px; }
   }
 </style>
 </head>
@@ -66,13 +72,27 @@
     <img src="/logo.png" alt="" onerror="this.style.display='none'">
     <h1>চোখাচোখি</h1>
   </div>
-  <span id="online"></span>
+  <div class="right">
+    <span id="online"></span>
+    <div id="userBox" class="user hidden">
+      <img id="userPhoto" class="hidden" alt="" referrerpolicy="no-referrer">
+      <span id="userName"></span>
+      <button id="logoutBtn">Logout</button>
+    </div>
+  </div>
 </header>
 
 <main>
-  <div id="gate">
+  <div id="login">
     <img class="logo" src="/logo.png" alt="চোখাচোখি" onerror="this.style.display='none'">
     <p><b style="color:#fff;font-size:18px">চোখাচোখি-তে স্বাগতম!</b></p>
+    <p>শুরু করতে আপনার Google অ্যাকাউন্ট দিয়ে লগইন করুন।</p>
+    <button id="loginBtn">Google দিয়ে লগইন</button>
+  </div>
+
+  <div id="gate" class="hidden">
+    <img class="logo" src="/logo.png" alt="চোখাচোখি" onerror="this.style.display='none'">
+    <p><b style="color:#fff;font-size:18px">প্রায় তৈরি!</b></p>
     <p>এখানে অচেনা মানুষের সাথে ভিডিও কল হবে। অশালীন আচরণ, হয়রানি বা অবৈধ কিছু করা নিষেধ। কেউ খারাপ আচরণ করলে "Report" চাপুন।</p>
     <label><input type="checkbox" id="ageCheck"> আমার বয়স ১৮ বা তার বেশি এবং আমি নিয়মগুলো মানছি</label>
     <button id="enterBtn" disabled>ক্যামেরা চালু করুন</button>
@@ -125,6 +145,7 @@ function setButtons(state) {
 $('ageCheck').onchange = (e) => { $('enterBtn').disabled = !e.target.checked; };
 
 $('enterBtn').onclick = async () => {
+  if (!window.currentUser) { alert('আগে লগইন করুন।'); return; }
   try {
     localStream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode: 'user', width: { ideal: 720 }, height: { ideal: 1280 }, aspectRatio: { ideal: 9 / 16 } },
@@ -192,6 +213,20 @@ $('reportBtn').onclick = () => {
   findNext();
 };
 
+// লগআউট করলে কল ও ক্যামেরা বন্ধ করে দেয়
+window.addEventListener('app-logout', () => {
+  active = false;
+  socket.emit('stop');
+  closePeer();
+  if (localStream) {
+    localStream.getTracks().forEach((t) => t.stop());
+    localStream = null;
+  }
+  $('local').srcObject = null;
+  setStatus('"Start" চাপুন');
+  setButtons('idle');
+});
+
 socket.on('waiting', () => setStatus('কারো জন্য অপেক্ষা করা হচ্ছে...'));
 
 socket.on('matched', async ({ initiator }) => {
@@ -232,6 +267,57 @@ socket.on('partner-left', () => {
 socket.on('online', (n) => { $('online').textContent = '🟢 অনলাইন: ' + n; });
 
 setButtons('idle');
+</script>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBnb39HLXJVxI5KiZTrKmdD5Nedr-N4Q90",
+  authDomain: "chokhachokhi-bd496.firebaseapp.com",
+  projectId: "chokhachokhi-bd496",
+  storageBucket: "chokhachokhi-bd496.firebasestorage.app",
+  messagingSenderId: "888866653071",
+  appId: "1:888866653071:web:6e929b1ae9112bbaca41fa"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+auth.languageCode = 'bn';
+const $ = (id) => document.getElementById(id);
+
+$('loginBtn').onclick = async () => {
+  try {
+    await signInWithPopup(auth, new GoogleAuthProvider());
+  } catch (e) {
+    if (e.code !== 'auth/popup-closed-by-user' && e.code !== 'auth/cancelled-popup-request') {
+      alert('লগইন করা যায়নি: ' + e.message);
+    }
+  }
+};
+
+$('logoutBtn').onclick = () => signOut(auth);
+
+onAuthStateChanged(auth, (user) => {
+  window.currentUser = user;
+  if (user) {
+    $('login').classList.add('hidden');
+    $('userBox').classList.remove('hidden');
+    $('userName').textContent = user.displayName || user.email || '';
+    if (user.photoURL) {
+      $('userPhoto').src = user.photoURL;
+      $('userPhoto').classList.remove('hidden');
+    }
+    if ($('app').classList.contains('hidden')) $('gate').classList.remove('hidden');
+  } else {
+    $('userBox').classList.add('hidden');
+    $('gate').classList.add('hidden');
+    $('app').classList.add('hidden');
+    $('login').classList.remove('hidden');
+    window.dispatchEvent(new Event('app-logout'));
+  }
+});
 </script>
 </body>
 </html>
