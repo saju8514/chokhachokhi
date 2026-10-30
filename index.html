@@ -54,7 +54,7 @@
   small { color: var(--muted); text-align: center; max-width: 600px; }
   @media (max-width: 700px) {
     main { padding: 8px; justify-content: flex-start; }
-    .videos { aspect-ratio: auto; height: 66vh; height: 66dvh; max-width: none; border-radius: 14px; }
+    .videos { aspect-ratio: 9/16; width: min(100%, 40vh); width: min(100%, 40dvh); height: auto; max-width: none; margin: 0 auto; border-radius: 14px; }
     #local { width: 32%; aspect-ratio: 3/4; }
     button { padding: 12px 16px; font-size: 15px; }
   }
@@ -126,7 +126,10 @@ $('ageCheck').onchange = (e) => { $('enterBtn').disabled = !e.target.checked; };
 
 $('enterBtn').onclick = async () => {
   try {
-    localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    localStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'user', width: { ideal: 720 }, height: { ideal: 1280 }, aspectRatio: { ideal: 9 / 16 } },
+      audio: true
+    });
   } catch (err) {
     alert('ক্যামেরা/মাইক্রোফোনের অনুমতি পাওয়া যায়নি: ' + err.message);
     return;
