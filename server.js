@@ -10,6 +10,22 @@ const io = new Server(server);
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.get('/logo.png', (req, res) => res.sendFile(path.join(__dirname, 'logo.png')));
 
+// TURN server-এর তথ্য Render-এর Environment Variables থেকে আসে (GitHub-এ থাকে না)
+app.get('/ice', (req, res) => {
+  const list = [{ urls: 'stun:stun.l.google.com:19302' }];
+  const user = process.env.TURN_USERNAME;
+  const pass = process.env.TURN_PASSWORD;
+  if (user && pass) {
+    list.push({ urls: 'stun:stun.relay.metered.ca:80' });
+    list.push({ urls: 'turn:global.relay.metered.ca:80', username: user, credential: pass });
+    list.push({ urls: 'turn:global.relay.metered.ca:80?transport=tcp', username: user, credential: pass });
+    list.push({ urls: 'turn:global.relay.metered.ca:443', username: user, credential: pass });
+    list.push({ urls: 'turns:global.relay.metered.ca:443?transport=tcp', username: user, credential: pass });
+  }
+  res.set('Cache-Control', 'no-store');
+  res.json(list);
+});
+
 // Only one person waits at a time; the next person to join is paired with them.
 let waiting = null;
 
