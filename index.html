@@ -122,13 +122,12 @@ let localStream = null;
 let pc = null;
 let active = false;
 
-const rtcConfig = {
-  iceServers: [
-    { urls: 'stun:stun.l.google.com:19302' }
-    // কিছু নেটওয়ার্কে TURN server লাগবে, যেমন:
-    // { urls: 'turn:YOUR_TURN_HOST:3478', username: 'USER', credential: 'PASS' }
-  ]
-};
+let rtcConfig = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+// TURN server-এর তথ্য সার্ভার থেকে আসে (Render-এর গোপন সেটিংসে রাখা)
+fetch('/ice').then((r) => r.json()).then((list) => {
+  if (Array.isArray(list) && list.length) rtcConfig = { iceServers: list };
+}).catch(() => {});
+let connectTimer = null;
 
 function setStatus(text) {
   $('status').textContent = text;
@@ -161,6 +160,7 @@ $('enterBtn').onclick = async () => {
 };
 
 function closePeer() {
+  clearTimeout(connectTimer);
   if (pc) {
     pc.ontrack = pc.onicecandidate = pc.onconnectionstatechange = null;
     pc.close();
@@ -174,18 +174,32 @@ function createPeer() {
   localStream.getTracks().forEach((t) => pc.addTrack(t, localStream));
   pc.ontrack = (e) => {
     $('remote').srcObject = e.streams[0];
-    setStatus('');
-    setButtons('connected');
+    $('remote').play().catch(() => {});
   };
   pc.onicecandidate = (e) => {
     if (e.candidate) socket.emit('signal', { candidate: e.candidate });
   };
   pc.onconnectionstatechange = () => {
-    if (pc && ['failed', 'disconnected'].includes(pc.connectionState)) {
-      setStatus('সংযোগ বিচ্ছিন্ন হয়েছে, নতুন কাউকে খোঁজা হচ্ছে...');
+    if (!pc) return;
+    const s = pc.connectionState;
+    if (s === 'connected') {
+      clearTimeout(connectTimer);
+      setStatus('');
+      setButtons('connected');
+      $('remote').play().catch(() => {});
+    } else if (s === 'failed') {
+      setStatus('সংযোগ হয়নি, নতুন কাউকে খোঁজা হচ্ছে...');
       findNext();
     }
   };
+  // ২০ সেকেন্ডে ভিডিও না এলে নতুন কাউকে খোঁজে
+  clearTimeout(connectTimer);
+  connectTimer = setTimeout(() => {
+    if (pc && pc.connectionState !== 'connected') {
+      setStatus('সংযোগ হয়নি, নতুন কাউকে খোঁজা হচ্ছে...');
+      findNext();
+    }
+  }, 20000);
 }
 
 function findNext() {
