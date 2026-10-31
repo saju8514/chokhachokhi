@@ -117,17 +117,42 @@
 <script src="/socket.io/socket.io.js"></script>
 <script>
 const $ = (id) => document.getElementById(id);
-const socket = io();
+// লগইনের পরেই সার্ভারে সংযোগ হয়, সার্ভার লগইন যাচাই করে নেয়
+const socket = io({
+  autoConnect: false,
+  auth: (cb) => {
+    (window.getIdToken ? window.getIdToken() : Promise.resolve(null))
+      .then((token) => cb({ token }))
+      .catch(() => cb({ token: null }));
+  }
+});
 let localStream = null;
 let pc = null;
 let active = false;
 
 let rtcConfig = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
-// TURN server-এর তথ্য সার্ভার থেকে আসে (Render-এর গোপন সেটিংসে রাখা)
-fetch('/ice').then((r) => r.json()).then((list) => {
-  if (Array.isArray(list) && list.length) rtcConfig = { iceServers: list };
-}).catch(() => {});
 let connectTimer = null;
+
+// TURN server-এর তথ্য সার্ভার থেকে আসে (শুধু লগইন করা ব্যবহারকারী পায়)
+async function loadIce() {
+  try {
+    const token = await window.getIdToken();
+    const r = await fetch('/ice', { headers: { Authorization: 'Bearer ' + token } });
+    const list = await r.json();
+    if (Array.isArray(list) && list.length) rtcConfig = { iceServers: list };
+  } catch (e) { /* STUN দিয়েই চলবে */ }
+}
+
+window.addEventListener('app-login', () => {
+  if (!socket.connected && !socket.active) socket.connect();
+  loadIce();
+});
+
+socket.on('connect_error', (err) => {
+  if (err && err.message === 'unauthorized') {
+    alert('লগইন যাচাই করা যায়নি। Logout করে আবার লগইন করুন।');
+  }
+});
 
 function setStatus(text) {
   $('status').textContent = text;
@@ -230,7 +255,9 @@ $('reportBtn').onclick = () => {
 // লগআউট করলে কল ও ক্যামেরা বন্ধ করে দেয়
 window.addEventListener('app-logout', () => {
   active = false;
-  socket.emit('stop');
+  if (socket.connected) socket.emit('stop');
+  socket.disconnect();
+  $('online').textContent = '';
   closePeer();
   if (localStream) {
     localStream.getTracks().forEach((t) => t.stop());
@@ -324,7 +351,10 @@ onAuthStateChanged(auth, (user) => {
       $('userPhoto').classList.remove('hidden');
     }
     if ($('app').classList.contains('hidden')) $('gate').classList.remove('hidden');
+    window.getIdToken = () => user.getIdToken();
+    window.dispatchEvent(new Event('app-login'));
   } else {
+    window.getIdToken = null;
     $('userBox').classList.add('hidden');
     $('gate').classList.add('hidden');
     $('app').classList.add('hidden');
